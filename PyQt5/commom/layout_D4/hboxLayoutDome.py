@@ -1,0 +1,51 @@
+import sys
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
+
+class QCheckBoxDemo(QWidget):
+    def __init__(self):
+        super(QCheckBoxDemo,self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('演示')
+
+        hlayout = QHBoxLayout()
+        vlayout = QVBoxLayout()
+        self.buttonA = QPushButton("A")
+        self.buttonB = QPushButton("B")
+        self.buttonC = QPushButton("C")
+        self.buttonD = QPushButton("D")
+        self.buttonE = QPushButton("E")
+        hlayout.setSpacing(50)
+
+        hlayout.addWidget(self.buttonA)
+        hlayout.addWidget(self.buttonB)
+        hlayout.addWidget(self.buttonC)
+        hlayout.addWidget(self.buttonD)
+        hlayout.addWidget(self.buttonE)
+
+        hlayout2 = QHBoxLayout()
+        self.buttonF = QPushButton("F")
+        self.buttonG = QPushButton("G")
+        self.buttonH = QPushButton("H")
+        self.buttonI = QPushButton("I")
+        # addWidget(控件，控件所占比例，对齐方式)
+        hlayout2.addWidget(self.buttonF,0, Qt.AlignLeft | Qt.AlignTop)
+        hlayout2.addWidget(self.buttonG,1)
+        hlayout2.addWidget(self.buttonH,3, Qt.AlignLeft | Qt.AlignBottom)
+        hlayout2.addWidget(self.buttonI,4, Qt.AlignLeft | Qt.AlignBottom)
+
+        vlayout.addLayout(hlayout)
+        vlayout.addLayout(hlayout2)
+
+        self.setLayout(vlayout)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    main = QCheckBoxDemo()
+    main.show()
+    sys.exit(app.exec_())

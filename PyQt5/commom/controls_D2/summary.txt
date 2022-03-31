@@ -1,0 +1,46 @@
+1、常用控件：QLabel、QLineEdit、QPushButton、QRadioButton、QCheckBox、QComboBox、
+QSlider(滑块)、QSpinBox(计数器)
+2、功能描述
+3、关联关系：https://blog.csdn.net/weixin_44653585/article/details/104432295
+4、槽
+QLabel：标签
+样式：
+setAlignment()：设置文本的对齐方式
+
+text()：获取文本内容
+setBuddy()：设置伙伴关系
+
+内容：
+1）文本 setText()：设置文本内容
+2）URL  setText("<a href='https://item.jd.com/12417265.html'>感谢关注《Python从菜鸟到高手》</a>")
+3）图片 setPixmap(QPixmap("./images/python.jpg"))
+4）GIT  setMovie(QMovie("movie.gif")) 
+您可以通过调用setSpeed()来控制电影播放的速度，setSpeed()将原始速度的百分比作为参数。
+通过调用setPaused（True）来暂停电影。 
+QMovie将进入暂停状态并发出stateChanged()。
+如果您调用setPaused（False），QMovie将重新进入运行状态并再次启动电影。
+要停止电影，请使用stop()。
+
+selectedText()：返回所选择的字符--功能是什么
+
+setWordWrap()：设置是否允许换行
+
+QLabel常用的信号（事件）：
+1.  当鼠标滑过QLabel控件时触发：linkHovered
+2.  当鼠标单击QLabel控件时触发：linkActivated
+
+QLineEdit：https://blog.csdn.net/jia666666/article/details/81510502
+
+EchoMode（回显模式）
+
+4种回显模式
+1. Normal：正常输入
+2. NoEcho：不显示输入
+3. Password：输入显示**
+4. PasswordEchoOnEdit：正常输入后，确认显示***
+
+setPlaceholderText()设置控件默认显示内容，灰色。
+
+
+
+

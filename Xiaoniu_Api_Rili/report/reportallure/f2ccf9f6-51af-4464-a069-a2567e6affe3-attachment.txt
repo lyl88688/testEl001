@@ -1,0 +1,1 @@
+INFO     run_all_case.py:test_dream_dreamInfoList.py:35 开始执行脚本test_dream_dreamInfoList:

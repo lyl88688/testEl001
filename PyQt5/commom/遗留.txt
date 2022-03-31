@@ -1,0 +1,46 @@
+
+
+1、
+调试板：QPalette()
+https://www.cnblogs.com/gaiqingfeng/p/13274916.html
+
+2、
+文本样式：对齐（缩进）
+setAlignment()：设置文本的对齐方式
+        1）Qt.AlignLeft:：水平方向靠左。
+
+        2）Qt.AlignRight：水平方向靠右。
+
+        3）Qt.AlignHCenter：水平方向居中。
+
+        4）Qt.AlignJustify：水平方向调整间距两端对齐。
+
+        5）Qt.AlignTop：垂直方向靠上。
+
+        6）Qt.AlignButton：垂直方向靠下。
+
+        7）Qt.AlignVCenter：垂直方向居中。
+
+        8）Qt.AlignCenter：等价于 Qt::AlignHCenter | Qt::AlignVCenter。
+
+原文链接：https://blog.csdn.net/qq_37631516/article/details/105478013
+
+label1.setAlignment(Qt.AlignCenter)
+
+
+setIndent(int)：设置文本缩进
+
+label5.setText("文本缩进样式")
+label5.setIndent(333)
+		
+		
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,7 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Fri Mar 04 10:52:12 CST 2022","Fri Mar 04 10:52:12 CST 2022","0","testCases","test_case_01","","","","test_custom_case03",""
+"passed","Fri Mar 04 10:52:12 CST 2022","Fri Mar 04 10:52:12 CST 2022","0","testCases","test_case_02","","","","test_case02",""
+"passed","Fri Mar 04 10:52:12 CST 2022","Fri Mar 04 10:52:12 CST 2022","0","testCases","test_case_01","","","","test_case02",""
+"passed","Fri Mar 04 10:52:12 CST 2022","Fri Mar 04 10:52:12 CST 2022","0","testCases","test_case_01","","","","test_case01",""
+"passed","Fri Mar 04 10:52:12 CST 2022","Fri Mar 04 10:52:12 CST 2022","0","testCases","test_case_02","","","","test_custom_case03",""
+"passed","Fri Mar 04 10:52:12 CST 2022","Fri Mar 04 10:52:12 CST 2022","0","testCases","test_case_02","","","","test_case01",""

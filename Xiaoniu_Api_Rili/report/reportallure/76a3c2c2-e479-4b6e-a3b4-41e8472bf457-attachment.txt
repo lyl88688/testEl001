@@ -1,0 +1,1 @@
+INFO     run_all_case.py:test_operation_list.py:35 开始执行脚本test_operation_list:

@@ -1,0 +1,42 @@
+主窗口类型
+
+有3种窗口
+
+QMainWindow
+
+QWidget
+
+QDialog
+
+QMainWindow：可以包含菜单栏、工具栏、状态栏和标题栏，是最常见的窗口形式
+
+QDialog：是对话窗口的基类。没有菜单栏、工具栏、状态栏。
+
+QWidget：不确定窗口的用途，就使用QWidget。
+
+import sys
+from PyQt5.QtWidgets import QMainWindow,QApplication
+from PyQt5.QtGui import QIcon
+
+class FirstMainWin(QMainWindow):
+    def __init__(self):
+        super(FirstMainWin,self).__init__()
+
+        # 设置主窗口的标题
+        self.setWindowTitle('第一个主窗口应用')
+
+        # 设置窗口的尺寸
+        self.resize(400,300)
+
+        self.status = self.statusBar()
+
+        self.status.showMessage('只存在5秒的消息',5000)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+
+    app.setWindowIcon(QIcon('./images/Dragon.ico'))
+    main = FirstMainWin()
+    main.show()
+
+    sys.exit(app.exec_())
