@@ -54,7 +54,7 @@ def send_mail(file_new):
         server.sendmail(SENDER,RECEIVER.split(','),msg.as_string())
         server.quit()
         print("邮件发送成功！")
-        #待优化，新增界面退出功能；20210824
+
     except Exception as e:
         print("失败: " + str(e))
 

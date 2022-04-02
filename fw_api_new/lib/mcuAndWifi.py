@@ -1,8 +1,16 @@
+"""
+mcu与wifi之间通讯协议封装
+
+"""
+
+
+
 import struct,binascii,time,serial
 import configparser
 from config import setting
 import os
-serialCom = "COM3"
+serialCom = "COM19"
+
 
 class opCodeClass():
     def __init__(self):
@@ -78,6 +86,7 @@ class opCodeClass():
 
         ser = serial.Serial(serialCom,115200,timeout=10)
         senddata = opCodeClass().cpcodeData(opCode, testData)
+        print(senddata)
         ser.write(senddata)
 
         count = ser.inWaiting()

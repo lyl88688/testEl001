@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
 
+"""
+处理不同设备得测试数据：时间、华氏度、摄氏度及全局变量赋值
+
+"""
+
+
 import os,sys,random
 sys.path.append(os.path.dirname(__file__))
 from requests.packages import urllib3
@@ -9,7 +15,6 @@ urllib3.disable_warnings()
 sys.path.append(os.path.dirname(__file__))
 from config import setting
 import configparser
-from lib.loggingTest import *
 from lib.mainWidget import *
 from lib import globalName
 
@@ -122,7 +127,14 @@ class getTempAndTime():
             cookTime.append((maxTime + 30) * 60)
 
 
+        # cookTimeTest1 = cookTime[-10:]#确保离点值在测试范围内
+        # random.shuffle(cookTime)#将测试数据随机排
+        # cookTimeTest2 = cookTime[0:len(cookTime)//3]#测试数据1/3
+        # newCookTime = cookTimeTest1 + cookTimeTest2
+        # return newCookTime
+
         return cookTime
+
 
     def getData(self, dataType):
         #根据测试数据类型，生成对应测试集。
@@ -154,7 +166,6 @@ class getTempAndTime():
             dictData = {}
             dictData["mode"] = iMode
             iModeIndex = self.newmode.index(iMode)
-            # print(iMode,iModeIndex)
             dictData["recipeId"] = int(self.newrecipeId[iModeIndex])
             dictData["timeMin"] = int(self.newtimeMin[iModeIndex])
             dictData["timeMax"] = int(self.newtimeMax[iModeIndex])
@@ -164,15 +175,15 @@ class getTempAndTime():
             dictData["tempDegMax"] = int(self.newtempDegMax[iModeIndex])
             allIniModeData.append(dictData)
 
-
+        logger.debug(allIniModeData)
         cookSetData = []
+
         for testData in allIniModeData:
             print(testData)
             # dataType:  0--time,1--tempHah;2--tempGeg
             if dataType == 0 and globalName.deviceType == 0:
                 testData["testUnit"] = "f"
                 self.testAllData = getTempAndTime().getTime(testData["timeMin"], testData["timeMax"])
-                # print(self.testAllData)
                 random.shuffle(self.testAllData)
                 for i in self.testAllData:
                     testDataNew = {}
@@ -209,7 +220,6 @@ class getTempAndTime():
             elif dataType == 2 and globalName.deviceType == 0:
                 testData["testUnit"] = "c"
                 self.testAllData = getTempAndTime().getFryerTempDeg(testData["tempDegMin"], testData["tempDegMax"])
-                # print(self.testAllData)
                 random.shuffle(self.testAllData)
                 for i in self.testAllData:
                     testDataNew = {}
@@ -228,7 +238,6 @@ class getTempAndTime():
             elif dataType == 0 and globalName.deviceType == 1:
                 testData["testUnit"] = "f"
                 self.testAllData = getTempAndTime().getTime(testData["timeMin"], testData["timeMax"], mode=testData["mode"])
-                # print(self.testAllData)
                 random.shuffle(self.testAllData)
                 for i in self.testAllData:
                     testDataNew = {}
@@ -247,7 +256,6 @@ class getTempAndTime():
             elif dataType == 1 and globalName.deviceType == 1:
                 testData["testUnit"] = "f"
                 self.testAllData = getTempAndTime().getTempFah(testData["tempHahMin"], testData["tempHahMax"])
-                # print(self.testAllData)
                 random.shuffle(self.testAllData)
                 for i in self.testAllData:
                     testDataNew = {}
@@ -282,45 +290,35 @@ class getTempAndTime():
                     cookSetData.append(testDataNew)
 
             else:
-                Logger().getLog().debug(" getData 获取数据有误，请排查！！！")
+                logger.error(" getData 获取数据有误，请排查！！！")
 
         print("Total testcase number is %d" % len(cookSetData))
 
-        Logger().getLog().debug(cookSetData)
+        logger.debug(cookSetData)
         return  cookSetData
 
     def getRegionAndVer(self):
         #根据测试数据类型，生成对应测试集。
         # 获取ini数据
-        con = configparser.ConfigParser()
-        con.read(setting.TEST_CONFIG, encoding='utf-8')
+        try:
+            con = configparser.ConfigParser()
+            con.read(setting.TEST_CONFIG, encoding='utf-8')
+            testDevice = globalName.testDevice
+            logger.debug("测试设备：%s"%testDevice)
+            # --------- 读取config.ini配置文件 ---------------
+            globalName.updateTime = con.get(testDevice, "updateTime")
+            globalName.deviceRegion = con.get(testDevice, "region")
+            globalName.pid = con.get(testDevice, "devicepid")
+            globalName.pluginNameMainFw = con.get(testDevice, "pluginNameMainFw")
+            globalName.newVersionMainFw = con.get(testDevice, "newVersionMainFw")
+            globalName.newVersionUrlMainFw = con.get(testDevice, "newVersionUrlMainFw")
+            globalName.pluginNameMcu = con.get(testDevice, "pluginNameMcu")
+            globalName.newVersionMcu = con.get(testDevice, "newVersionMcu")
+            globalName.newVersionUrlMcu = con.get(testDevice, "newVersionUrlMcu")
+            globalName.oldVersionMainFw = con.get(testDevice, "oldVersionMainFw")
+            globalName.oldVersionUrlMainFw = con.get(testDevice, "oldVersionUrlMainFw")
+            globalName.oldVersionMcu = con.get(testDevice, "oldVersionMcu")
+            globalName.oldVersionUrlMcu = con.get(testDevice, "oldVersionUrlMcu")
 
-        # global deviceRegion
-        # global pluginNameMainFw
-        # global newVersionMainFw
-        # global newVersionUrlMainFw
-        # global pluginNameMcu
-        # global newVersionMcu
-        # global newVersionUrlMcu
-        # global updateTime
-        # global oldVersionMainFw
-        # global oldVersionUrlMainFw
-        # global oldVersionMcu
-        # global oldVersionUrlMcu
-        # global pid
-        testDevice = globalName.testDevice
-        Logger().getLog().debug("测试设备：%s"%testDevice)
-        # --------- 读取config.ini配置文件 ---------------
-        globalName.updateTime = con.get(testDevice, "updateTime")
-        globalName.deviceRegion = con.get(testDevice, "region")
-        globalName.pid = con.get(testDevice, "devicepid")
-        globalName.pluginNameMainFw = con.get(testDevice, "pluginNameMainFw")
-        globalName.newVersionMainFw = con.get(testDevice, "newVersionMainFw")
-        globalName.newVersionUrlMainFw = con.get(testDevice, "newVersionUrlMainFw")
-        globalName.pluginNameMcu = con.get(testDevice, "pluginNameMcu")
-        globalName.newVersionMcu = con.get(testDevice, "newVersionMcu")
-        globalName.newVersionUrlMcu = con.get(testDevice, "newVersionUrlMcu")
-        globalName.oldVersionMainFw = con.get(testDevice, "oldVersionMainFw")
-        globalName.oldVersionUrlMainFw = con.get(testDevice, "oldVersionUrlMainFw")
-        globalName.oldVersionMcu = con.get(testDevice, "oldVersionMcu")
-        globalName.oldVersionUrlMcu = con.get(testDevice, "oldVersionUrlMcu")
+        except:
+            logger.debug(" getRegionAndVer 获取ini配置失败，请排查！！！  config.ini路劲：%s"%setting.TEST_CONFIG)

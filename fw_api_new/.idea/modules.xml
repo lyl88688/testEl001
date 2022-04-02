@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/06.lyl_API.iml" filepath="$PROJECT_DIR$/.idea/06.lyl_API.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/fw_api_new.iml" filepath="$PROJECT_DIR$/.idea/fw_api_new.iml" />
     </modules>
   </component>
 </project>

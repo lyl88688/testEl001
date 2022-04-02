@@ -4,43 +4,17 @@ import _thread
 import base64
 import hashlib
 import json
-import logging
-import os
-import socket
 import struct
-import sys
 import time
 
 import requests
-import rsa
 import serial
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP, PKCS1_v1_5     # 生成对象
-
+from lib.logGet import *
 # 禁用安全请求警告
 requests.packages.urllib3.disable_warnings()
-
-# 创建一个日志文件
-#  debug info warning error critical
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)  # Log等级总开关
-rq = time.strftime('%Y_%m%d_%H%M')
-b = sys.argv[0].split(".")[0]  # 获取文件名
-file_path = str(b) + '_logs'  # 日志目录
-if not os.path.exists(file_path):
-    os.mkdir(file_path)  # 创建日志目录
-file_name = file_path + rq + ".log"  # 日志文件格式
-handler = logging.FileHandler(file_path + "/" + rq + ".log")
-handler.setLevel(logging.INFO)  # 输出到file的log等级的开关
-formatter = logging.Formatter('%(asctime)s -  %(levelname)s - %(message)s')  # 定义handler的输出格式
-handler.setFormatter(formatter)
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)  # 输出到控制台的log等级的开关
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')  # 定义console的输出格式
-console.setFormatter(formatter)
-logger.addHandler(handler)
-logger.addHandler(console)
 
 # AES 密钥
 G_AES_KEY = struct.pack('BBBBBBBBBBBBBBBB', 0x6c, 0x6c, 0x77, 0x61, 0x6e, 0x74, 0x61, 0x65, 0x73, 0x6b, 0x65, 0x79,
@@ -89,8 +63,6 @@ g_opcode = 0
 g_pubkey = None
 g_privkey = None
 
-# Padding for the input string --not
-# related to encryption itself.
 BLOCK_SIZE = 16  # Bytes
 pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * \
                 chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
@@ -115,7 +87,9 @@ class serial_com():
             return
         else:
             try:
+                print("send_data", send_data)
                 self.serial.write(send_data)
+
             except Exception as e:
                 logger.info(str(e))
 
@@ -139,10 +113,9 @@ class AES_CBC:
 
     # 解密方法
     def decrypt_oralce(self, text):
-        # logger.info(text)
         aes = AES.new(G_AES_KEY, AES.MODE_CBC, G_AES_IV)
         plain_text = aes.decrypt(text)
-        # logger.info(str(plain_text, 'utf-8'))
+        logger.info(str(plain_text, 'utf-8'))
         return unpad(plain_text)
 
 
@@ -199,7 +172,6 @@ def print_hex_ary(ary):
         # logger.info('%02x' % ary[cnt], )
         print('%02x' % ary[cnt],end=' ')
         cnt = cnt + 1
-    # logger.info()
 
 
 # 计算校验和
@@ -434,9 +406,7 @@ def config_key_exchange():
     encrypt_data = aes.encrypt_oracle(json.dumps(json_data))
     msg_pack = proto_payload_pack(OP_KEY_EXCHANGE, encrypt_data)
 
-    # logger.info("【=========TX数据=========")
-    # print_hex_ary(msg_pack)
-    # logger.info("=========TX数据=========】")
+    logger.info("【=========TX数据=========>%s" % msg_pack)
     return msg_pack
 
 
@@ -636,14 +606,15 @@ def proto_device_log_handle(data_payload):
         pass
 
 def push_button(ser2, t):
-    #4通道继电器
-    COMMAND_PORT_ON_1 = [255, 5, 00, 00, 255, 00, 153, 228]
-    COMMAND_PORT_OFF_1 = [255, 5, 00, 00, 00, 00, 216, 20]
+    #1通道继电器
+    COMMAND_PORT_ON_1 = [51, 1, 18, 0, 0, 0, 1, 71]
+    COMMAND_PORT_OFF_1 = [51, 1, 17, 0, 0, 0, 1, 70]
 
     logger.info("按电源键5s,设备开始进入配网")
     ser2.data_send(COMMAND_PORT_ON_1)
     time.sleep(t)
     ser2.data_send(COMMAND_PORT_OFF_1)
+
 
 
 if __name__ == '__main__':
@@ -654,9 +625,6 @@ if __name__ == '__main__':
     按一下板子上的boot按键,就会开始配对绑定,配对成功后即可以进行数据收发
     '''
 
-    # # 净化器Core200S
-    # g_cid = '0MOAZBVbucmS5aK9BEHsN1kK5LEoexAU'
-    # configModule = 'WiFiBTOnboarding_AirPurifier_Core200S_JP'
 
     #净化器Core300s芯邦us
     g_cid = 'fwtest-ddy6oRXm_ebo97lU-abxQGEcv'
@@ -670,7 +638,7 @@ if __name__ == '__main__':
     wifiPassword = "12345678"
     # ipaddr = "192.168.0.178"  # 设备ip，通过tcp删除设备
 
-    # ser2 = serial_com("COM3", 9600)  # 继电器com口,波特率固定为9600
+    ser2 = serial_com("COM13", 9600)  # 继电器com口,波特率固定为9600
     serial = serial_com("COM16", 115200)  # 蓝牙透传工具com口,波特率固定115200
 
     _thread.start_new_thread(serial_relay_run, ("serial_thread",))  # 蓝牙监听消息回复
@@ -681,7 +649,7 @@ if __name__ == '__main__':
         logger.info("==========Round=========" + str(i))
 
         #按键5s以上触发配网
-        # push_button(ser2, 7)
+        push_button(ser2, 7)
         time.sleep(3)
 
         get_configkey()  # 获取配网configkey
@@ -698,15 +666,6 @@ if __name__ == '__main__':
         print("=====循环获取WiFi列表=====")
         serial.data_send(get_wifi_list(1, 0))   # 0查缓存 1查实时
         time.sleep(10)
-        # =====循环获取WiFi列表======
-        # serial.data_send(get_wifi_list(1, 0))  # 查询缓存wifi列表
-        # time.sleep(2)
-        # serial.data_send(get_wifi_list(2, 0))  # 查询缓存wifi列表
-        # time.sleep(2)
-        # serial.data_send(get_wifi_list(1, 1))  # 查询实时wifi列表
-        # time.sleep(4)
-        # serial.data_send(get_wifi_list(2, 1))  # 查询实时wifi列表
-        # time.sleep(2)
         # 发送配网信息
         serial.data_send(set_netconfig_info())
         time.sleep(10)

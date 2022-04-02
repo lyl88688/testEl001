@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
-
+"""
+定义全局变量，方面赋值，多模块调用。
+"""
 
 device_url = None
 rownew1 = None

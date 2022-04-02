@@ -10,9 +10,10 @@
 #==================================================
 
 
-import unittest
-from lib.commonData import *
-import json, ddt, threading
+import unittest,json, ddt, threading,time
+from lib.commonApi import *
+from lib.serialComData import *
+from unittestreport import rerun
 
 
 #全局变量
@@ -49,8 +50,7 @@ cookStartVal = [["AirFry", 6, 150,1800],
 
 #不支持预热
 cookStartValTaost = ["Toast", 1, 480, 275, 5]
-# ["Dehydrate", 10, 100, 1800],
-# ["Fermentation", 11, 80,1800],
+
 
 #需要匹配的串口字符串变量，来源Qmtt协议。
 comDataStr = '{"context":{"traceId":"[0-9]*","method":"preheatEndV2".*?"preheatTempUnit":.*?}}'
@@ -100,8 +100,9 @@ class cosoriTest(unittest.TestCase):
 
     @ddt.data(*cookStartVal)
     #@ddt.unpac
+    @rerun(count=3, interval=3)
     def testqmttMode(self, testval):
-        # global testval
+        print(time.strftime("%Y-%m-%d %X"))
         threads = []
         global tsmode, tsrecipeId, tscookTemp, tscookTime, tspreheatTemp
         tsmode = testval[0]
@@ -122,7 +123,7 @@ class cosoriTest(unittest.TestCase):
             t.join()
 
         try:
-            print(testComData)
+            print("\n匹配数据：", testComData)
             if testComData["context"]["traceId"]:
                 self.assertEqual(testComData["context"]["method"], exceptMethod)
                 self.assertEqual(testComData["context"]["pid"], exceptPid)

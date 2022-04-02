@@ -12,14 +12,16 @@
 #描述：
 #==================================================
 
-from lib.commonData import *
-import json,ddt
+from lib.testDataManage import *
+import json,ddt,unittest,time
+from unittestreport import rerun
+
 
 dataType = 2 #0--time,1--tempHah;2--tempGeg
 
 cookSet = getTempAndTime().getData(dataType=dataType)
-print(cookSet)
-print("testApiTemp_Deg")
+
+# print("testApiTemp_Deg:", cookSet)
 #测试时间
 timeRun = 300   #运行5min
 
@@ -35,7 +37,9 @@ class cosoriTest(unittest.TestCase):
 
     @ddt.data(*cookSet)
     #@ddt.unpac
+    @rerun(count=3, interval=3)
     def testApiTemp(self, startCookTemp):
+        print(time.strftime("%Y-%m-%d %X"))
         print("===================开始测试时间==========================", startCookTemp)
         print("======changeUnit=========")
         degUnit = commonFunc().commMethodApi(method="setTempUnit", unit=startCookTemp["testUnit"])
@@ -66,6 +70,7 @@ class cosoriTest(unittest.TestCase):
 
             except Exception as e:
                 print("=====异常=====", e)
+                #防止下发成功，但因网络导致无返回。
                 self.resStatus = commonFunc().commMethodApiNew(method="getOvenStatusV2")
                 self.assertEqual(json.loads(self.resStatus.text)["result"]["result"]["stepArray"][0]["cookTemp"], startCookTemp["testDataVal"])
                 modeEndCook = commonFunc().commMethodApiNew(method="endCook")
@@ -73,24 +78,26 @@ class cosoriTest(unittest.TestCase):
         else:
             try:
                 if startCookTemp["testDataVal"] < startCookTemp["tempDegMin"]:
-                    resCook = commonFunc().commMethodApiNew(method="startCook", mode=startCookTemp["mode"],
+                    print("温度下限")
+                    resCook1 = commonFunc().commMethodApiNew(method="startCook", mode=startCookTemp["mode"],
                                                             recipeId=startCookTemp["recipeId"],
                                                             cookTime=startCookTemp["timeMin"]+timeRun,
                                                             unit=startCookTemp["testUnit"],
                                                             cookTemp=startCookTemp["testDataVal"])
                     #温度下限
-                    self.assertEqual(json.loads(resCook.text)["result"]["code"], 11011000)
+                    self.assertEqual(json.loads(resCook1.text)["result"]["code"], 11011000)
 
                     self.resStatus = commonFunc().commMethodApiNew(method="getOvenStatusV2")
                     self.assertEqual(json.loads(self.resStatus.text)["result"]["result"]["cookStatus"], "standby")
                 elif startCookTemp["testDataVal"] > startCookTemp["tempDegMax"]:
-                    resCook = commonFunc().commMethodApiNew(method="startCook", mode=startCookTemp["mode"],
+                    print("温度上限")
+                    resCook2 = commonFunc().commMethodApiNew(method="startCook", mode=startCookTemp["mode"],
                                                             recipeId=startCookTemp["recipeId"],
                                                             cookTime=startCookTemp["timeMin"]+timeRun,
                                                             unit=startCookTemp["testUnit"],
                                                             cookTemp=startCookTemp["testDataVal"])
                     # 温度上限
-                    self.assertEqual(json.loads(resCook.text)["result"]["code"], 11010000)
+                    self.assertEqual(json.loads(resCook2.text)["result"]["code"], 11010000)
 
                     self.resStatus = commonFunc().commMethodApiNew(method="getOvenStatusV2")
                     self.assertEqual(json.loads(self.resStatus.text)["result"]["result"]["cookStatus"], "standby")
@@ -99,6 +106,7 @@ class cosoriTest(unittest.TestCase):
 
             except Exception as e:
                 print("=====异常=====")
+                # 防止下发成功，但因网络导致无返回。
                 self.resStatus = commonFunc().commMethodApiNew(method="getOvenStatusV2")
                 self.assertEqual(json.loads(self.resStatus.text)["result"]["result"]["stepArray"], e)
                 modeEndCook = commonFunc().commMethodApiNew(method="endCook")

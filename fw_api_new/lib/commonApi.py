@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
 __author__ = 'eleven'
+"""
+将测试接口封装、接口数据处理等
+"""
 
-import os,sys
+
+import os,sys,requests,json, logging, time
 from requests.packages import urllib3
 # 禁用安全请求警告
 urllib3.disable_warnings()
 sys.path.append(os.path.dirname(__file__))
-import requests
-import json
-from lib.loggingTest import *
 from lib import globalName
+from lib.logGet import *
+
 
 #全局变量
 header = {"Content-Type":"application/json"}
 #毫秒级时间戳
 traceId = str(int(round(time.time() * 1000)))
-
 
 
 class commonFunc():
@@ -47,10 +49,13 @@ class commonFunc():
             "timeZone": "America/Phoenix",
             "debugMode": False
         }
+        try:
+            loginRes = requests.post(url = testUrl, headers = header , json = data_user, verify=False)
+            return loginRes
+        except Exception as e:
+            logger.error(" gentoken 获取失败！--> %s" % e)
 
-        loginRes = requests.post(url = testUrl, headers = header , json = data_user, verify=False)
 
-        return loginRes
 
     def debugLevel(self, method="setLogLevel", debugMode=globalName.debugModeDef):
         self.commInfo = self.deviceInfo()
@@ -71,13 +76,11 @@ class commonFunc():
 
                 return self.commRes
             except Exception as e:
-                print("请求响应异常--->%s"%e)
-                Logger().getLog().debug("debugLevel 请求响应异常--->%s" % e)
+                logger.debug("debugLevel 请求响应异常--->%s" % e)
                 time.sleep(3)
                 i += 1
 
-        Logger().getLog().debug("===================debugLevel 请求响应异常======================")
-        return self.commRes
+        logger.debug("===================debugLevel 请求响应异常======================")
 
     def getAppDevInfo(self, tk, accountId):
         data = {"traceId": traceId,
@@ -94,9 +97,11 @@ class commonFunc():
             }
         testUrl = "https://test-online-dev.vesync.com/cloud/v1/deviceManaged/devices"
 
-        self.re = requests.post(url=testUrl, headers=header, json=data, verify=False)
-
-        return self.re
+        try:
+            self.re = requests.post(url=testUrl, headers=header, json=data, verify=False)
+            return self.re
+        except Exception as e:
+            logger.error(" getAppDevInfo 获取设备信息失败！--> %s" % e)
 
     def deviceInfo(self, method = "bypassV2", configModule="", region="US"):
         while True:
@@ -156,13 +161,13 @@ class commonFunc():
         else:
             pass
 
-        Logger().getLog().debug(" commMethodApi 发送数据--> %s" % self.commInfo)
+        logger.debug(" commMethodApi 发送数据--> %s" % self.commInfo)
         try:
             self.commRes = requests.post(url = globalName.device_url, json = self.commInfo, verify = False)
-            Logger().getLog().debug(json.loads(self.commRes.text))
+            logger.debug(" commMethodApi 返回数据--> %s" % json.loads(self.commRes.text))
             return self.commRes
         except Exception as e:
-            Logger().getLog().error("commMethodApi 请求响应异常--->%s" % e)
+            logger.error("commMethodApi 请求响应异常--->%s" % e)
 
 
     def commMethodApiNew(self, method, mode="", recipeId="", cookTemp=180, cookTime=1800, unit="f",cookLevel=4, preheatTemp=0, readyStart=False):
@@ -207,27 +212,30 @@ class commonFunc():
 
         self.commCmd = {"method": method, "data": self.data, "source": "xxx"}
         self.commInfo["payload"] = self.commCmd
-        # Logger().getLog().debug(" commMethodApiNew 发送数据--> %s" % self.commInfo)
+        logger.debug(" commMethodApiNew 发送数据--> %s" % self.commInfo)
         try:
             if method == "endCook":
                 n = 0
                 self.commRes = requests.post(url=globalName.device_url, json=self.commInfo, verify=False)
+                logger.debug(" commMethodApiNew 返回数据 <-- %s" % self.commRes.text)
                 while method == "endCook" and json.loads(self.commRes.text)["result"]["code"] != 0 and         \
                         json.loads(self.commRes.text)["result"]["code"] != 11903000 and n < 3:
                     if json.loads(self.commRes.text)["result"]["code"] == 11005000:
                         return self.commRes
                     else:
-
-                        Logger().getLog().debug("请求停止烹饪失败--->%s" % json.loads(self.commRes.text)["result"]["code"])
+                        logger.debug("请求停止烹饪失败--->%s" % json.loads(self.commRes.text)["result"]["code"])
                         time.sleep(2)
                         n += 1
                         self.commRes = requests.post(url=globalName.device_url, json=self.commInfo, verify=False)
+                return self.commRes
+
             else:
                 self.commRes = requests.post(url=globalName.device_url, json=self.commInfo, verify=False)
+                logger.debug(" commMethodApiNew 返回数据 <-- %s" % self.commRes.text)
                 return self.commRes
 
         except Exception as e:
-            Logger().getLog().error("commMethodApiNew 请求响应异常--->%s" % e)
+            logger.error("commMethodApiNew 请求响应异常--->%s" % e)
 
     def getVersionInfo(self, typeVer="", versionVal=""):
         """
@@ -256,23 +264,23 @@ class commonFunc():
             try:
                 self.getVersionRes = requests.post(url = self.getFirmwareUpdateInfoListUrl, headers=header, json = self.getVerInfo, verify = False)
                 #当前版本号json.loads(getVersionRes.tex t)["result"]["cidFwInfoList"][0]["firmUpdateInfos"][0]["currentVersion"]
-                Logger().getLog().debug(json.loads(self.getVersionRes.text))
+                logger.debug(json.loads(self.getVersionRes.text))
                 if "mcuFw" in typeVer:
                     currentVer = json.loads(self.getVersionRes.text)["result"]["cidFwInfoList"][0]["firmUpdateInfos"][0]["currentVersion"]
                 elif "mainFw" in typeVer:
                     currentVer = json.loads(self.getVersionRes.text)["result"]["cidFwInfoList"][0]["firmUpdateInfos"][1]["currentVersion"]
                 else:
-                    Logger().getLog().error("pluginName有误。。。。。。。")
-                    print("pluginName有误。。。。。。。")
+                    logger.error("pluginName有误。。。。。。。")
 
-                Logger().getLog().error("versionVal = %s----------currentVer = %s"%(versionVal, currentVer))
                 time.sleep(10)
                 i += 1
 
             except:
                 time.sleep(10)
-                Logger().getLog().error("getVersionInfo 请求响应异常--->%s"%i)
+                logger.error("getVersionInfo 请求响应异常--->%s"%i)
                 i += 1
+
+            logger.error("versionVal = %s----------currentVer = %s" % (versionVal, currentVer))
 
             try:
                 print("获取当前MCU版本号--->%s"%(json.loads(self.getVersionRes.text)["result"]["cidFwInfoList"][0]["firmUpdateInfos"][0]["currentVersion"]))
@@ -302,23 +310,21 @@ class commonFunc():
             "debugMode": False,
             "cidInfoList": [{"cid":globalName.device_cid, "pluginName":pluginName}]
         }
-        i = 0
-        while i < 3:
-            try:
-                self.firmUpRes = requests.post(url=url, json=param, verify=False)
-                Logger().getLog().debug(json.loads(self.firmUpRes.text))
-                m = 0
-                while json.loads(self.firmUpRes.text)["result"]["statusList"][0]["updateStatus"] == 17 and m < 1:
-                    print("固件下载失败。。。。。。失败状态码：%s"%json.loads(self.firmUpRes.text)["result"]["statusList"][0]["updateStatus"])
 
-                    return self.firmUpRes
+        try:
+            self.firmUpRes = requests.post(url=url, json=param, verify=False)
+            logger.debug(json.loads(self.firmUpRes.text))
+            m = 0
+            while m <= 2:
+                time.sleep(2)
+                m += 1
+                if json.loads(self.firmUpRes.text)["result"]["statusList"][0]["updateStatus"] == 17:
+                    logger.debug("固件下载失败。。。。。。失败状态码：%s"%json.loads(self.firmUpRes.text)["result"]["statusList"][0]["updateStatus"])
+
                 else:
-                    m += 1
-                i += 1
-            except:
-                time.sleep(3)
-                i += 1
-                Logger().getLog().error(" getreportFirmUpV2 请求响应异常--> %s"%i)
+                    return self.firmUpRes
+        except Exception as e:
+            logger.error(" getreportFirmUpV2 请求响应异常--> %s" % e)
 
     def errCode(self, codeNo):
         if codeNo == 0:
