@@ -1,0 +1,10 @@
+
+# user
+.idea/
+.vscode/
+__pycache__/
+build/
+*.spec
+log/
+report/
+
